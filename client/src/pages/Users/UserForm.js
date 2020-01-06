@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { toast } from 'react-toastify';
+import axios from 'axios';
 import { MdPersonAdd } from 'react-icons/md';
 import styled from 'styled-components';
 
@@ -9,31 +11,63 @@ const UserForm = () => {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
+  const [state, setState] = useState('');
   const [zip, setZip] = useState('');
   const [gender, setGender] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = e => {
     e.preventDefault();
-    const userData = {
-      firstName,
-      lastName,
-      email,
-      phone,
-      address,
-      city,
-      zip,
+    if (
+      firstName &&
+      lastName &&
+      email &&
+      phone &&
+      address &&
+      city &&
+      state &&
+      zip &&
       gender
-    };
+    ) {
+      let userData = {
+        firstName,
+        lastName,
+        email,
+        phone,
+        address,
+        city,
+        state,
+        zip,
+        gender
+      };
 
-    console.log(userData);
-    setFirstName('');
-    setLastName('');
-    setEmail('');
-    setPhone('');
-    setAddress('');
-    setCity('');
-    setZip('');
-    setGender('');
+      for (var item in userData) {
+        userData[item] = userData[item].toLowerCase();
+      }
+
+      setLoading(true);
+      axios
+        .post('/api/users', userData)
+        .then(res => {
+          toast.success('User Saved');
+          setLoading(false);
+          setFirstName('');
+          setLastName('');
+          setEmail('');
+          setPhone('');
+          setAddress('');
+          setCity('');
+          setState('');
+          setZip('');
+          setGender('');
+        })
+        .catch(err => {
+          toast.warn('Contact details cannot be same !!');
+          setLoading(false);
+        });
+    } else {
+      toast.error('All Fields are Mandatory');
+    }
   };
 
   return (
@@ -95,7 +129,7 @@ const UserForm = () => {
           />
         </div>
         <div className='form-row'>
-          <div className='form-group col-md-6'>
+          <div className='form-group col-md-3'>
             <label htmlFor='inputCity'>City</label>
             <input
               type='text'
@@ -104,7 +138,16 @@ const UserForm = () => {
               onChange={e => setCity(e.target.value)}
             />
           </div>
-          <div className='form-group col-md-2'>
+          <div className='form-group col-md-3'>
+            <label htmlFor='inputState'>State</label>
+            <input
+              type='text'
+              className='form-control'
+              value={state}
+              onChange={e => setState(e.target.value)}
+            />
+          </div>
+          <div className='form-group col-md-3'>
             <label htmlFor='inputZip'>Zip</label>
             <input
               type='text'
@@ -113,7 +156,7 @@ const UserForm = () => {
               onChange={e => setZip(e.target.value)}
             />
           </div>
-          <div className='form-group col-md-4'>
+          <div className='form-group col-md-3'>
             <label htmlFor='inputGender'>Gender</label>
             <select
               className='form-control'
@@ -132,7 +175,15 @@ const UserForm = () => {
             type='submit'
             className='btn btn-dark btn-block text-uppercase mt-4'
           >
-            Submit Info
+            {loading ? (
+              <span
+                className='spinner-grow spinner-grow-sm'
+                role='status'
+                aria-hidden='true'
+              ></span>
+            ) : (
+              'SUBMIT INFO'
+            )}
           </button>
         </div>
       </form>

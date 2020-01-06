@@ -27,9 +27,17 @@ mongoose.connect(
 );
 
 // Routes
-const storesRouter = require('./routes/stores');
+const storeRouter = require('./routes/stores');
+const userRouter = require('./routes/users');
+const brandRouter = require('./routes/brands');
+const categoryRouter = require('./routes/categories');
+const productRouter = require('./routes/products');
 
-app.use('/api/stores', storesRouter);
+app.use('/api/stores', storeRouter);
+app.use('/api/users', userRouter);
+app.use('/api/brands', brandRouter);
+app.use('/api/categories', categoryRouter);
+app.use('/api/products', productRouter);
 
 // Serve static assets if in production
 if (process.env.NODE_ENV === 'production') {

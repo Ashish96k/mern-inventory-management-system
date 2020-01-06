@@ -1,30 +1,70 @@
-import React, { useState } from 'react';
-import { FaShoppingBag  } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { FaShoppingBag } from 'react-icons/fa';
 import styled from 'styled-components';
 
 const ProductsForm = () => {
-  const [product, setProduct] = useState('');
+  const [productName, setProductName] = useState('');
   const [price, setPrice] = useState('');
+  const [brands, setBrands] = useState([]);
   const [brand, setBrand] = useState('');
+  const [categories, setCategories] = useState([]);
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    axios
+      .get('/api/brands')
+      .then(res => {
+        setBrands(res.data);
+      })
+      .catch(err => console.log(err));
+    axios
+      .get('/api/categories')
+      .then(res => {
+        setCategories(res.data);
+      })
+      .catch(err => console.log(err));
+  }, []);
 
   const handleSubmit = e => {
     e.preventDefault();
-    const productData = {
-      product,
-      price,
-      brand,
-      category,
-      description
-    };
+    if (productName && price && brand && category && description) {
+      var productData = {
+        productName,
+        price,
+        brand,
+        category,
+        description
+      };
 
-    console.log(productData);
-    setProduct('');
-    setPrice('');
-    setBrand('');
-    setCategory('');
-    setDescription('');
+      for (var item in productData) {
+        productData[item] = productData[item].toLowerCase();
+      }
+
+      setLoading(true);
+      axios
+        .post('/api/products', productData)
+        .then(res => {
+          toast.success('Product has been added !!');
+          setLoading(false);
+          setProductName('');
+          setPrice('');
+          setBrand('');
+          setCategory('');
+          setDescription('');
+        })
+        .catch(err => {
+          console.log(err);
+          toast.warn('Something went wrong !!');
+          toast.warn('Make sure your description is more than 5 cahracters !!');
+          setLoading(false);
+        });
+    } else {
+      toast.error('All fields are required !!');
+    }
   };
 
   return (
@@ -44,8 +84,8 @@ const ProductsForm = () => {
             <input
               type='text'
               className='form-control'
-              value={product}
-              onChange={e => setProduct(e.target.value)}
+              value={productName}
+              onChange={e => setProductName(e.target.value)}
             />
           </div>
         </div>
@@ -63,32 +103,50 @@ const ProductsForm = () => {
           </div>
         </div>
         <div className='form-group row'>
-            <label htmlFor='inputBrand' className='col-sm-2 col-form-label'>Brand Name</label>
-            <div className='col-sm-10 col-lg-8'>
+          <label htmlFor='inputBrand' className='col-sm-2 col-form-label'>
+            Brand Name
+          </label>
+          <div className='col-sm-10 col-lg-8'>
             <select
               className='form-control'
               value={brand}
-              onChange={e => setBrand(e.target.value)}
+              onChange={e=>setBrand(e.target.value)}
             >
               <option value=''>Choose Brand</option>
-              <option value='nike'>Nike</option>
-              <option value='adidas'>Adidas</option>
-              <option value='reebok'>Reebok</option>
+              {brands.map(brand => (
+                <option
+                  key={brand._id}
+                  className='text-capitalize'
+                  value={brand.brandName}
+                  onClick={()=> setBrand(brand.brandName)}
+                >
+                  {brand.brandName}
+                </option>
+              ))}
             </select>
           </div>
         </div>
         <div className='form-group row'>
-            <label htmlFor='inputBrand' className='col-sm-2 col-form-label'>Category</label>
-            <div className='col-sm-10 col-lg-8'>
+          <label htmlFor='inputBrand' className='col-sm-2 col-form-label'>
+            Category
+          </label>
+          <div className='col-sm-10 col-lg-8'>
             <select
               className='form-control'
               value={category}
-              onChange={e => setCategory(e.target.value)}
+              onChange={e=>setCategory(e.target.value)}
             >
               <option value=''>Choose Category</option>
-              <option value='formal'>Formal</option>
-              <option value='casual'>Casual</option>
-              <option value='sports'>Sports</option>
+              {categories.map(category => (
+                <option
+                  key={category._id}
+                  className='text-capitalize'
+                  value={category.categoryName}
+                  onClick={() => setCategory(category.categoryName)}
+                >
+                  {category.categoryName}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -107,7 +165,15 @@ const ProductsForm = () => {
         </div>
         <div className='form-group row'>
           <button className='btn btn-dark mx-5 my-4 btn-block text-uppercase'>
-            submit details
+            {loading ? (
+              <span
+                className='spinner-grow spinner-grow-sm'
+                role='status'
+                aria-hidden='true'
+              ></span>
+            ) : (
+              'submit details'
+            )}
           </button>
         </div>
       </form>

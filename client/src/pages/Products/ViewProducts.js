@@ -1,8 +1,26 @@
-import React from 'react';
-import { FaShoppingBag  } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { FaShoppingBag } from 'react-icons/fa';
 import styled from 'styled-components';
 
 const ViewProducts = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    axios
+      .get('/api/products')
+      .then(res => {
+        setProducts(res.data);
+        setLoading(false);
+      })
+      .catch(err => {
+        toast.warn('Something went wrong !!');
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <div className='table-responsive'>
       <h2 className='text-dark text-center text-uppercase mt-2 mb-4'>
@@ -11,48 +29,48 @@ const ViewProducts = () => {
         </Icon>{' '}
         our products
       </h2>
-      <table className='table'>
-        <thead className='thead-dark'>
-          <tr>
-            <th scope='col'>#</th>
-            <th scope='col'>Name</th>
-            <th scope='col'>Price</th>
-            <th scope='col'>Brand</th>
-            <th scope='col'>Category</th>
-            <th scope='col'>Date Added</th>
-            <th scope='col'>Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th scope='row'>1</th>
-            <td>T-shirt</td>
-            <td>$10</td>
-            <td>nike</td>
-            <td>sports</td>
-            <td>22 Dec 2019</td>
-            <td>Lorem ipsum dollar</td>
-          </tr>
-          <tr>
-            <th scope='row'>2</th>
-            <td>Trousers</td>
-            <td>$17</td>
-            <td>nike</td>
-            <td>sports</td>
-            <td>09 Nov 2019</td>
-            <td>Lorem ipsum dollar</td>
-          </tr>
-          <tr>
-            <th scope='row'>3</th>
-            <td>Shirt</td>
-            <td>$12</td>
-            <td>adidas</td>
-            <td>sports</td>
-            <td>15 Oct 2019</td>
-            <td>Lorem ipsum dollar</td>
-          </tr>
-        </tbody>
-      </table>
+      {loading ? (
+        <div className='d-flex justify-content-center mt-5'>
+          <div
+            className='spinner-grow'
+            style={{ width: '4rem', height: '4rem' }}
+            role='status'
+          >
+            <span className='sr-only'>Loading...</span>
+          </div>
+        </div>
+      ) : products.length > 0 ? (
+        <table className='table'>
+          <thead className='thead-dark'>
+            <tr>
+              <th scope='col'>#</th>
+              <th scope='col'>Name</th>
+              <th scope='col'>Price</th>
+              <th scope='col'>Brand</th>
+              <th scope='col'>Category</th>
+              <th scope='col'>Date Added</th>
+              <th scope='col'>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((product, index) => (
+              <tr key={product._id} className='text-capitalize'>
+                <th scope='row'>{index + 1}</th>
+                <td>{product.productName}</td>
+                <td>$ {product.price}</td>
+                <td>{product.brand}</td>
+                <td>{product.category}</td>
+                <td>{Date(product.date).substring(4, 15)}</td>
+                <td>{product.description}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <h2 className='text-danger text-center text-capitalize mt-5'>
+          please add some products !!
+        </h2>
+      )}
     </div>
   );
 };

@@ -1,21 +1,43 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 import { FaTags } from 'react-icons/fa';
 import styled from 'styled-components';
 
 const BrandForm = () => {
-  const [brand, setBrand] = useState('');
+  const [brandName, setBrand] = useState('');
   const [website, setWebsite] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = e => {
     e.preventDefault();
-    const brandData = {
-      brand,
-      website
-    };
 
-    console.log(brandData);
-    setBrand('');
-    setWebsite('');
+    if (brandName && website) {
+      let brandData = {
+        brandName,
+        website
+      };
+
+      for (var item in brandData) {
+        brandData[item] = brandData[item].toLowerCase();
+      }
+
+      setLoading(true);
+      axios
+        .post('/api/brands', brandData)
+        .then(res => {
+          toast.success(res.data);
+          setLoading(false);
+          setBrand('');
+          setWebsite('');
+        })
+        .catch(err => {
+          toast.warn('Something went wrong !!');
+          setLoading(false);
+        });
+    } else {
+      toast.error('All fields are required !!');
+    }
   };
 
   return (
@@ -35,7 +57,7 @@ const BrandForm = () => {
             <input
               type='text'
               className='form-control'
-              value={brand}
+              value={brandName}
               onChange={e => setBrand(e.target.value)}
             />
           </div>
@@ -55,7 +77,15 @@ const BrandForm = () => {
         </div>
         <div className='form-group row'>
           <button className='btn btn-dark mx-5 my-4 btn-block text-uppercase'>
-            submit details
+            {loading ? (
+              <span
+                className='spinner-grow spinner-grow-sm'
+                role='status'
+                aria-hidden='true'
+              ></span>
+            ) : (
+              'submit details'
+            )}
           </button>
         </div>
       </form>

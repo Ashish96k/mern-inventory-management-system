@@ -4,14 +4,24 @@ import { Link } from 'react-router-dom';
 import { FaInfoCircle } from 'react-icons/fa';
 
 const ItemCard = props => {
-  const { themeData, total, subheading, link } = props;
+  const { themeData, total, loading, subheading, link } = props;
   const { primaryColor, secondaryColor, icon } = themeData;
   return (
     <>
       <CardContainer>
         <CardBody primaryColor={primaryColor}>
           <DataContainer>
-            <Total>{total}</Total>
+            <Total>
+              {loading ? (
+                <span
+                  className='spinner-grow spinner-grow'
+                  role='status'
+                  aria-hidden='true'
+                ></span>
+              ) : (
+                total
+              )}
+            </Total>
             <Subheading>{subheading}</Subheading>
           </DataContainer>
           <IconContainer>

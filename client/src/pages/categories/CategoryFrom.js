@@ -1,18 +1,40 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 import { MdFolder } from 'react-icons/md';
 import styled from 'styled-components';
 
-const BrandForm = () => {
-  const [category, setCategory] = useState('');
+const CategoryForm = () => {
+  const [categoryName, setCategoryName] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = e => {
     e.preventDefault();
-    const categoryData = {
-      category
-    };
+    if (categoryName) {
+      let categoryData = {
+        categoryName
+      };
 
-    console.log(categoryData);
-    setCategory('');
+      for (var item in categoryData) {
+        categoryData[item] = categoryData[item].toLowerCase();
+      }
+
+      setLoading(true);
+      axios
+        .post('/api/categories', categoryData)
+        .then(res => {
+          toast.success(res.data);
+          setLoading(false);
+          setCategoryName('');
+        })
+        .catch(err => {
+          console.log(err);
+          toast.warn('Something went wrong !!');
+          setLoading(false);
+        });
+    } else {
+      toast.error('Mandatory Field !!')
+    }
   };
 
   return (
@@ -32,14 +54,22 @@ const BrandForm = () => {
             <input
               type='text'
               className='form-control'
-              value={category}
-              onChange={e => setCategory(e.target.value)}
+              value={categoryName}
+              onChange={e => setCategoryName(e.target.value)}
             />
           </div>
         </div>
         <div className='form-group row'>
           <button className='btn btn-dark mx-5 my-4 btn-block text-uppercase'>
-            submit details
+            {loading ? (
+              <span
+              className='spinner-grow spinner-grow-sm'
+              role='status'
+              aria-hidden='true'
+            ></span>
+            ) : (
+              'submit details'
+            )}
           </button>
         </div>
       </form>
@@ -47,7 +77,7 @@ const BrandForm = () => {
   );
 };
 
-export default BrandForm;
+export default CategoryForm;
 
 const Icon = styled.span`
   font-size: 40px;
